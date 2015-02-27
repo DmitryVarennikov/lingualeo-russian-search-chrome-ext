@@ -1,0 +1,22 @@
+{
+    "name": "Lingualeo Russian Search",
+    "version": "0.0.1",
+    "manifest_version": 2,
+    "description": "Позволяет искать английские слова по их переводу",
+    "icons": {
+        "48": "images/icon48.png"
+    },
+    "background": {
+        "page": "background.html"
+    },
+    "permissions": [
+        "storage",
+        "unlimitedStorage",
+        "http://lingualeo.com/*",
+        "https://lingualeo.com/*"
+    ],
+    "content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
+    "web_accessible_resources": [
+        "manifest.json"
+    ]
+}

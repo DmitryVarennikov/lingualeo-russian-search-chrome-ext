@@ -1,0 +1,53 @@
+<script type="text/javascript" data-main="scripts/background" src="scripts/require.js"></script>
+
+<style>
+    body {
+        font-size: 18px;
+        font-family: "Helvetica Neue Light", "HelveticaNeue-Light", "Helvetica Neue", Calibri, Helvetica, Arial;
+        color: #333;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .group {
+        margin-bottom: 20px;
+    }
+
+    input {
+        width: 400px;
+        line-height: 24px;
+        padding: 0 10px;
+        border-radius: 3px;
+        border: 1px solid #333333;
+    }
+
+    #progress {
+        background-color: #cccccc;
+        width: 500px;
+    }
+
+    #progress .progress {
+        padding: 10px 0;
+        background-color: #333333;
+        text-align: center;
+        color: #ffffff;
+    }
+
+    #search-results > div {
+        margin-bottom: 5px;
+    }
+
+    .term {
+        font-weight: bold;
+    }
+</style>
+
+<body>
+<div class="group"><input type="text" name="search-box" placeholder="Search" disabled></div>
+<div class="group" id="progress">
+    <div class="progress"></div>
+</div>
+<div class="group" id="search-results"></div>
+</body>
