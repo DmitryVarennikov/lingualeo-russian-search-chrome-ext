@@ -7,7 +7,8 @@ define([], function () {
         }
 
         // sync storage has limitations on 4KB per item and 100KB in total
-        var storage = chrome.storage.local;
+        var storage = chrome.storage.local,
+            words = [];
 
 
         /**
@@ -15,20 +16,37 @@ define([], function () {
          * @param {Function} callback({String})
          */
         this.search = function (term, callback) {
-            getWords(function (words) {
-                var prevWord;
+            if (words.length) {
+                search(words, term, callback);
+            } else {
+                getWords(function (_words) {
+                    words = _words;
+                    search(words, term, callback);
+                });
+            }
+
+            // @TODO: interrupt search for an old term if a new one has come
+            function search(words, term, callback) {
+                var prevWordValue,
+                    resultNum = 0;
 
                 words.forEach(function (word) {
-                    word.user_translates.forEach(function (translation) {
-                        if (translation.translate_value.indexOf(term) > - 1) {
-                            if (prevWord !== word) {
-                                prevWord = word;
-                                callback(word);
+                    if (resultNum < 20) {
+                        word.user_translates.forEach(function (translation) {
+                            if (translation.translate_value.indexOf(term) > - 1) {
+
+
+                                if (prevWordValue != word.word_value) {
+                                    prevWordValue = word.word_value;
+                                    resultNum ++;
+
+                                    callback(word);
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
                 });
-            });
+            }
         };
 
         /**
@@ -46,7 +64,7 @@ define([], function () {
                             callback(error);
                         } else {
                             words = words.concat(wordsBatch);
-                            console.log('words:', words);
+
                             storage.set({"words": words}, function () {
                                 if (chrome.runtime.lastError) {
                                     console.error(chrome.runtime.lastError);

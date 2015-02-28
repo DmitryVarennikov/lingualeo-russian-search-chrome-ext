@@ -86,8 +86,6 @@ define([], function () {
             });
 
             searchBox.addEventListener('keyup', function (e) {
-                console.log(this.value);
-
                 searchResultsEl.style.display = "block";
                 searchResultsEl.innerHTML = '';
 
@@ -96,6 +94,8 @@ define([], function () {
                 //notFoundImageEl.style.display = "none";
 
                 if (isCyrillicInput(this.value)) {
+                    e.stopPropagation();
+
                     storage.search(this.value, updateSearchResults);
                 }
             });
