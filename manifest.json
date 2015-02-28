@@ -15,8 +15,24 @@
         "http://lingualeo.com/*",
         "https://lingualeo.com/*"
     ],
+    "content_scripts": [
+        {
+            "matches": [
+                "http://lingualeo.com/ru/userdict",
+                "https://lingualeo.com/ru/userdict"
+            ],
+            "js": [
+                "scripts/require.js",
+                "scripts/require-cs.js",
+                "scripts/content-script.js"
+            ]
+        }
+    ],
     "content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
     "web_accessible_resources": [
-        "manifest.json"
+        "manifest.json",
+        "scripts/storage.js",
+        "scripts/service.js",
+        "scripts/view.js"
     ]
 }

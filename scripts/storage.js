@@ -9,19 +9,16 @@ define([], function () {
         // sync storage has limitations on 4KB per item and 100KB in total
         var storage = chrome.storage.local;
 
-        var words = [];
 
         /**
          * @param {String} term
          * @param {Function} callback({String})
          */
         this.search = function (term, callback) {
-            var prevWord;
+            getWords(function (words) {
+                var prevWord;
 
-            words.forEach(function (word) {
-                if ("" === term) {
-                    callback(word);
-                } else {
+                words.forEach(function (word) {
                     word.user_translates.forEach(function (translation) {
                         if (translation.translate_value.indexOf(term) > - 1) {
                             if (prevWord !== word) {
@@ -30,7 +27,7 @@ define([], function () {
                             }
                         }
                     });
-                }
+                });
             });
         };
 
@@ -39,11 +36,7 @@ define([], function () {
          * @param {Function} callback({String}, {Number})
          */
         this.sync = function (callback) {
-            storage.get("words", function (obj) {
-                if (obj.words) {
-                    words = obj.words;
-                }
-
+            getWords(function (words) {
                 // @TODO: update words (e.i. add new words)
                 if (words.length) {
                     callback(null, 100);
@@ -64,6 +57,17 @@ define([], function () {
                         }
                     });
                 }
+            });
+        }
+
+        function getWords(callback) {
+            var words = [];
+            storage.get("words", function (obj) {
+                if (obj.words) {
+                    words = obj.words;
+                }
+
+                callback(words);
             });
         }
     }
