@@ -7,6 +7,30 @@ define([], function () {
         }
 
         /**
+         * @param {Function} callback({String}, {Array})
+         */
+        this.getGroups = function (callback) {
+            var req = new XMLHttpRequest();
+            req.open('GET', 'http://lingualeo.com/ru/userdict3/getWordSets', true);
+            req.onreadystatechange = function () {
+                if (4 === req.readyState && 200 === req.status) {
+                    try {
+                        var response = JSON.parse(req.response);
+                        if (response.error_msg) {
+                            callback(response.error_msg);
+                        } else {
+                            callback(null, response.result);
+                        }
+                    } catch (error) {
+                        callback(error);
+                    }
+
+                }
+            };
+            req.send(null);
+        };
+
+        /**
          * @TODO: download only new words
          * Download words in batch
          * @param {Function} callback({String}, {Number}, {Array})
@@ -35,10 +59,11 @@ define([], function () {
             var req = new XMLHttpRequest();
             req.open('GET', 'http://lingualeo.com/ru/userdict/json?page=' + page, true);
             req.onreadystatechange = function () {
-                if (4 === req.readyState) {
-                    if (200 === req.status) {
-                        var words = [];
-                        var response = JSON.parse(req.response);
+                if (4 === req.readyState && 200 === req.status) {
+                    try {
+                        var response = JSON.parse(req.response),
+                            words = [];
+
                         if (response.error_msg) {
                             callback(response.error_msg);
                         } else {
@@ -52,6 +77,8 @@ define([], function () {
                                 downloadPartsRecursively(++ page, callback);
                             }
                         }
+                    } catch (error) {
+                        callback(error);
                     }
                 }
             };

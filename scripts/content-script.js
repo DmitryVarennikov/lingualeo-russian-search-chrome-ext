@@ -10,7 +10,7 @@ require(
     function (Storage, Service, View) {
         var service = new Service(),
             storage = new Storage(service),
-            view = new View(storage);
+            view = new View(storage, service);
 
         view.listenToSearchBox();
     }

@@ -10,12 +10,18 @@ define([], function () {
         var storage = chrome.storage.local,
             words = [];
 
+        // pre load words as soon as we create an object (it basically means we hit http://lingualeo.com/ru/userdict)
+        getWords(function (_words) {
+            words = _words;
+        });
+
 
         /**
          * @param {String} term
          * @param {Function} callback({String})
          */
         this.search = function (term, callback) {
+            // just in case
             if (words.length) {
                 search(words, term, callback);
             } else {

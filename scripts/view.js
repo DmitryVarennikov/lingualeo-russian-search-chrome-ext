@@ -1,19 +1,31 @@
 'use strict';
 
 define([], function () {
-    function View(storage) {
+    function View(storage, service) {
         if (! (this instanceof View)) {
             throw new Error('`this` must be an instance of View');
         }
 
+        // DOM elements
         var contentEl = document.getElementById('content'),
             searchResultsEl = contentEl.getElementsByClassName('dict-short-view')[0],
             notFoundEl = contentEl.getElementsByClassName('not-found')[0],
             notFoundImageEl = contentEl.getElementsByClassName('not-found-image')[0],
             searchBox = document.getElementsByName('search')[0],
             clearSearchBox = contentEl.getElementsByClassName('clear-search')[0];
-
         //var progressEl = document.getElementById('progress').children[0];
+
+
+        // load groups meanwhile
+        var groups = [];
+        service.getGroups(function (error, _groups) {
+            if (error) {
+                console.error(error);
+            } else {
+                groups = _groups;
+            }
+        });
+
 
         function addClass(domEl, className) {
             if (! hasClass(domEl, className)) {
@@ -64,15 +76,30 @@ define([], function () {
             groupsEl.dataset.widget = "WordGroupTagsContainer";
 
             if (word.groups) {
-                word.groups.forEach(function (group) {
+                var groupsAdded = 0;
+                word.groups.forEach(function (wordGroup) {
                     var groupLinkEl = document.createElement('a');
                     groupLinkEl.setAttribute('class', 't-ellps link-gray-dotted');
-                    groupLinkEl.dataset.wordGroup = group;
+                    groupLinkEl.dataset.wordGroup = wordGroup;
                     // @TODO: owner?
                     groupLinkEl.dataset.wordGroupType = "owner";
-                    groupLinkEl.innerText = "group name";
+
+                    groupLinkEl.innerText = "nameless";
+                    groups.forEach(function (group) {
+                        if (group.id == wordGroup) {
+                            groupLinkEl.innerText = group.name;
+                        }
+                    });
+
+                    // separate group names from each other
+                    if (groupsAdded) {
+                        var groupsSeparatorEl = document.createElement('span');
+                        groupsSeparatorEl.innerText = ", ";
+                        groupsEl.appendChild(groupsSeparatorEl);
+                    }
 
                     groupsEl.appendChild(groupLinkEl);
+                    groupsAdded ++;
                 });
             }
 
