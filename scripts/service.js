@@ -7,7 +7,7 @@ define([], function () {
         }
 
         /**
-         * @param {Function} callback({String}, {Array})
+         * @param {Function} callback({String|null}, {Array})
          */
         this.getGroups = function (callback) {
             var req = new XMLHttpRequest();
@@ -31,23 +31,39 @@ define([], function () {
         };
 
         /**
-         * @TODO: download only new words
-         * Download words in batch
-         * @param {Function} callback({String}, {Number}, {Array})
+         * @param {String|null} latestWord
+         * @param {Function} callback({String|null}, {Array})
          */
-        this.download = function (callback) {
-            var downloadedWords = 0;
-
+        this.downloadWords = function (latestWord, callback) {
             downloadPartsRecursively(0, function (error, totalWords, wordsBatch) {
-                var percentage;
+                var abort = false;
 
                 if (error) {
                     callback(error);
                 } else {
-                    downloadedWords += wordsBatch.length;
-                    percentage = calcPercentage(totalWords, downloadedWords);
-                    callback(null, percentage, wordsBatch);
+                    var newBatch = [];
+
+                    if (latestWord) {
+                        // grab all the words before the latest one
+                        for (var i = 0, word; i < wordsBatch.length; i ++) {
+                            word = wordsBatch[i];
+
+                            if (word.word_id == latestWord.word_id) {
+                                abort = true;
+                                break;
+                            } else {
+                                newBatch.push(word);
+                            }
+                        }
+
+                        callback(null, newBatch);
+                    } else {
+                        callback(null, wordsBatch);
+                    }
                 }
+
+                // interrupt recursive dictionary download
+                return abort;
             });
         };
 
@@ -71,9 +87,9 @@ define([], function () {
                                 words = words.concat(group.words);
                             });
 
-                            callback(null, response.count_words, words);
+                            var abort = callback(null, response.count_words, words);
 
-                            if (response.show_more) {
+                            if (! abort && response.show_more) {
                                 downloadPartsRecursively(++ page, callback);
                             }
                         }

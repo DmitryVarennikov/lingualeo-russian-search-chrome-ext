@@ -7,12 +7,20 @@ define([], function () {
         }
 
         // sync storage has limitations on 4KB per item and 100KB in total
+        // local storage is 5MB but we explicitly requested "unlimitedStorage" in manifest
         var storage = chrome.storage.local,
             words = [];
 
         // pre load words as soon as we create an object (it basically means we hit http://lingualeo.com/ru/userdict)
         getWords(function (_words) {
             words = _words;
+
+            var latestWord = null;
+            if (words.length) {
+                latestWord = words[0];
+            }
+
+            updateWords(latestWord);
         });
 
 
@@ -21,68 +29,53 @@ define([], function () {
          * @param {Function} callback({String})
          */
         this.search = function (term, callback) {
-            // just in case
-            if (words.length) {
-                search(words, term, callback);
-            } else {
-                getWords(function (_words) {
-                    words = _words;
-                    search(words, term, callback);
-                });
-            }
-
             // @TODO: interrupt search for an old term if a new one has come
-            function search(words, term, callback) {
-                var prevWordValue,
-                    resultNum = 0;
 
-                words.forEach(function (word) {
-                    if (resultNum < 20) {
-                        word.user_translates.forEach(function (translation) {
-                            if (translation.translate_value.indexOf(term) > - 1) {
+            var prevWordValue,
+                resultNum = 0;
+
+            words.forEach(function (word) {
+                if (resultNum < 20) {
+                    word.user_translates.forEach(function (translation) {
+                        if (translation.translate_value.indexOf(term) > - 1) {
 
 
-                                if (prevWordValue != word.word_value) {
-                                    prevWordValue = word.word_value;
-                                    resultNum ++;
+                            if (prevWordValue != word.word_value) {
+                                prevWordValue = word.word_value;
+                                resultNum ++;
 
-                                    callback(word);
-                                }
+                                callback(word);
                             }
-                        });
-                    }
-                });
-            }
-        };
-
-        /**
-         * Sync user words
-         * @param {Function} callback({String}, {Number})
-         */
-        this.sync = function (callback) {
-            getWords(function (words) {
-                // @TODO: update words (e.i. add new words)
-                if (words.length) {
-                    callback(null, 100);
-                } else {
-                    service.download(function (error, percentage, wordsBatch) {
-                        if (error) {
-                            callback(error);
-                        } else {
-                            words = words.concat(wordsBatch);
-
-                            storage.set({"words": words}, function () {
-                                if (chrome.runtime.lastError) {
-                                    console.error(chrome.runtime.lastError);
-                                }
-
-                                callback(null, percentage);
-                            });
                         }
                     });
                 }
             });
-        }
+        };
+
+        function updateWords(latestWord) {
+            service.downloadWords(latestWord, function (error, wordsBatch) {
+                if (error) {
+                    console.error(error);
+                } else {
+                    // !!!important: if we already have the latest word then add new batch on top of the the basis,
+                    // otherwise merge down (it's an initial download)
+
+                    if (latestWord) {
+                        console.info("Latest word:", wordsBatch);
+                        words = wordsBatch.concat(words);
+                    } else {
+                        words = words.concat(wordsBatch);
+                    }
+
+
+                    storage.set({"words": words}, function () {
+                        if (chrome.runtime.lastError) {
+                            console.error(chrome.runtime.lastError);
+                        }
+                    });
+                }
+            });
+        };
 
         function getWords(callback) {
             var words = [];
