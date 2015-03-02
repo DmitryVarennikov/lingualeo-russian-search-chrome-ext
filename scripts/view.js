@@ -15,6 +15,38 @@ define([], function () {
 
         //var progressEl = document.getElementById('progress').children[0];
 
+        function addClass(domEl, className) {
+            if (! hasClass(domEl, className)) {
+                domEl.className += " " + className;
+            }
+        }
+
+        function removeClass(domEl, className) {
+            var re = new RegExp('(?:^|\\s)' + className + '(?!\\S)', 'g');
+            domEl.className = domEl.className.replace(re, '');
+        }
+
+        function hasClass(domEl, className) {
+            var re = new RegExp('(?:^|\\s)' + className + '(?!\\S)');
+            return domEl.className.match(re);
+        }
+
+        function cleanTranslations() {
+            var children = searchResultsEl.children;
+
+            var i = children.length - 1,
+                child;
+            while (i >= 0) {
+                child = children[i];
+
+                if (hasClass(child, 'translation')) {
+                    searchResultsEl.removeChild(child);
+                }
+
+                i --;
+            }
+        }
+
 
         function updateSearchResults(word) {
             var translations = [];
@@ -65,7 +97,7 @@ define([], function () {
 
 
             var wrapperEl = document.createElement('div');
-            wrapperEl.setAttribute('class', 'dict-item-word');
+            wrapperEl.setAttribute('class', 'dict-item-word translation');
             wrapperEl.dataset.wordId = word.word_id;
             wrapperEl.dataset.card = word.word_id;
 
@@ -81,20 +113,35 @@ define([], function () {
          * Consider use of `this.updateProgressBar` instead
          */
         this.listenToSearchBox = function () {
-            clearSearchBox.addEventListener('click', function(e) {
-                searchResultsEl.innerHTML = '';
+            clearSearchBox.addEventListener('click', function (e) {
+                if (hasClass(searchResultsEl, 'translations')) {
+                    removeClass(searchResultsEl, 'translations');
+                    cleanTranslations();
+                }
             });
 
             searchBox.addEventListener('keyup', function (e) {
-                searchResultsEl.style.display = "block";
-                searchResultsEl.innerHTML = '';
+                if (this.value) {
+                    removeClass(clearSearchBox, 'vhidden');
+                }
 
-                // @fixme: does not work
-                //notFoundEl.style.display = "none";
-                //notFoundImageEl.style.display = "none";
+                if (hasClass(searchResultsEl, 'translations')) {
+                    removeClass(searchResultsEl, 'translations');
+                    cleanTranslations();
 
-                if (isCyrillicInput(this.value)) {
+                    if (! this.value) {
+                        // trigger lingualeo dictionary results
+                        clearSearchBox.click();
+                    }
+                }
+
+
+                if (this.value && isCyrillicInput(this.value)) {
                     e.stopPropagation();
+
+                    addClass(searchResultsEl, 'translations');
+                    searchResultsEl.style.display = "block";
+                    searchResultsEl.innerHTML = "";
 
                     storage.search(this.value, updateSearchResults);
                 }
