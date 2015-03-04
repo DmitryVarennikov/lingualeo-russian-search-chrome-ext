@@ -1,14 +1,18 @@
 'use strict';
 
-require.config({
-    baseUrl: '.'
-});
-
-require([
+require({
+        baseUrl: '.',
+        paths:   {
+            text: "scripts/text"
+        }
+    },
+    [
         'scripts/storage',
         'scripts/service',
-        'scripts/view'
+        'scripts/view',
+        'text!templates/dict-row.tpl'
     ],
-    function (Storage, Service, View) {
+    function (Storage, Service, View, dictRowTpl) {
         console.log('background page running...');
+        console.log(dictRowTpl);
     });

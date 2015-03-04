@@ -33,6 +33,8 @@
         "manifest.json",
         "scripts/storage.js",
         "scripts/service.js",
-        "scripts/view.js"
+        "scripts/view.js",
+        "scripts/text.js",
+        "templates/dict-row.tpl"
     ]
 }

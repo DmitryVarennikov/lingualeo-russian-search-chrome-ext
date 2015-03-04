@@ -1,7 +1,12 @@
 'use strict';
 
 require(
-    {baseUrl: chrome.extension.getURL("/")},
+    {
+        baseUrl: chrome.extension.getURL("/"),
+        paths:   {
+            text: "scripts/text"
+        }
+    },
     [
         'scripts/storage',
         'scripts/service',

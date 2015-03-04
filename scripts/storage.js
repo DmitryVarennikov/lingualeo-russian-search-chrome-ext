@@ -26,7 +26,7 @@ define([], function () {
 
         /**
          * @param {String} term
-         * @param {Function} callback({String})
+         * @param {Function} callback({String}, {String})
          */
         this.search = function (term, callback) {
             // @TODO: interrupt search for an old term if a new one has come
@@ -44,7 +44,7 @@ define([], function () {
                                 prevWordValue = word.word_value;
                                 resultNum ++;
 
-                                callback(word);
+                                callback(word, term);
                             }
                         }
                     });

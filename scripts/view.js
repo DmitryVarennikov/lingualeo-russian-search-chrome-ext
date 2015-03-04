@@ -1,6 +1,9 @@
 'use strict';
 
-define([], function () {
+define([
+    'text!templates/dict-row.tpl'
+], function (dictRowTpl) {
+
     function View(storage, service) {
         if (! (this instanceof View)) {
             throw new Error('`this` must be an instance of View');
@@ -59,22 +62,36 @@ define([], function () {
             }
         }
 
+        var prevSearchTerm,
+            wordNumber;
 
-        function updateSearchResults(word) {
+        function updateSearchResults(word, searchTerm) {
             var translations = [];
+
+            if (prevSearchTerm != searchTerm) {
+                wordNumber = 1;
+                prevSearchTerm = searchTerm;
+            } else {
+                wordNumber ++;
+            }
+
             word.user_translates.forEach(function (translation) {
                 translations.push(translation.translate_value);
             });
 
-            var soundEl = document.createElement('div');
-            soundEl.setAttribute('class', 'item-word-sound');
+            var wrapperEl = document.createElement('div');
+            wrapperEl.setAttribute('class', 'dict-item-word translation');
+            wrapperEl.dataset.wordId = word.word_id;
+            wrapperEl.dataset.card = word.word_id;
+            wrapperEl.dataset.wordValue = word.word_value;
+            wrapperEl.dataset.wordNumber = wordNumber;
+            wrapperEl.innerHTML = dictRowTpl;
+
+            var soundEl = wrapperEl.getElementsByClassName('item-word-sound')[0];
             soundEl.dataset.voiceUrl = word.sound_url;
             soundEl.dataset.tooltip = word.transcription;
 
-            var groupsEl = document.createElement('div');
-            groupsEl.setAttribute('class', 'kits-name');
-            groupsEl.dataset.widget = "WordGroupTagsContainer";
-
+            var groupsEl = wrapperEl.getElementsByClassName('kits-name')[0];
             if (word.groups) {
                 var groupsAdded = 0;
                 word.groups.forEach(function (wordGroup) {
@@ -103,42 +120,16 @@ define([], function () {
                 });
             }
 
-
-            var wordWrapperEl = document.createElement('div');
-            wordWrapperEl.setAttribute('class', 'item-word-translate');
-
-            var wordEl = document.createElement('b');
+            var wordEl = wrapperEl.getElementsByClassName('item-word-translate')[0].getElementsByTagName('b')[0];
             wordEl.innerText = word.word_value;
 
-            var separatorEl = document.createElement('span');
-            separatorEl.innerHTML = "&nbsp;—&nbsp;";
-
-            var translationsEl = document.createElement('span');
-            translationsEl.setAttribute('class', 'translates t-ellps');
-            translationsEl.dataset.widget = "DictionaryTranslates";
+            var translationsEl = wrapperEl.getElementsByClassName('translates t-ellps')[0];
             translationsEl.innerText = translations.join('; ');
 
-            wordWrapperEl.appendChild(wordEl);
-            wordWrapperEl.appendChild(separatorEl);
-            wordWrapperEl.appendChild(translationsEl);
-
-
-            var wrapperEl = document.createElement('div');
-            wrapperEl.setAttribute('class', 'dict-item-word translation');
-            wrapperEl.dataset.wordId = word.word_id;
-            wrapperEl.dataset.card = word.word_id;
-
-
-            wrapperEl.appendChild(soundEl);
-            wrapperEl.appendChild(groupsEl);
-            wrapperEl.appendChild(wordWrapperEl);
 
             searchResultsEl.appendChild(wrapperEl);
         }
 
-        /**
-         * Consider use of `this.updateProgressBar` instead
-         */
         this.listenToSearchBox = function () {
             clearSearchBox.addEventListener('click', function (e) {
                 if (hasClass(searchResultsEl, 'translations')) {
@@ -174,24 +165,6 @@ define([], function () {
                 }
             });
         };
-
-        /**
-         * Updates progress bar and activates search box once percentage >= 100
-         *
-         * @param {Number} percentage
-         */
-        //this.updateProgressBar = function (percentage) {
-        //    progressEl.innerText = percentage + "%";
-        //    progressEl.style.width = percentage + "%"
-        //
-        //    if (percentage >= 100) {
-        //        progressEl.setAttribute('class', 'hidden');
-        //
-        //        this.listenToSearchBox();
-        //        // show all words at first
-        //        searchBox.dispatchEvent(new Event("keyup"));
-        //    }
-        //};
 
         /**
          * Actually everything that we need to know is if the first character matches russian alphabet
