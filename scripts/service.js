@@ -35,7 +35,7 @@ define([], function () {
          * @param {Function} callback({String|null}, {Array})
          */
         this.downloadWords = function (latestWord, callback) {
-            downloadPartsRecursively(0, function (error, totalWords, wordsBatch) {
+            downloadPartsRecursively(1, function (error, totalWords, wordsBatch) {
                 var abort = false;
 
                 if (error) {
