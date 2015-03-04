@@ -11,7 +11,7 @@ define([
 
         // DOM elements
         var contentEl = document.getElementById('content'),
-            searchResultsEl = contentEl.getElementsByClassName('dict-short-view')[0],
+            searchResultsEl = contentEl.getElementsByClassName('dict-content')[0].children[0],
             notFoundEl = contentEl.getElementsByClassName('not-found')[0],
             notFoundImageEl = contentEl.getElementsByClassName('not-found-image')[0],
             searchBox = document.getElementsByName('search')[0],
@@ -86,6 +86,21 @@ define([
             wrapperEl.dataset.wordValue = word.word_value;
             wrapperEl.dataset.wordNumber = wordNumber;
             wrapperEl.innerHTML = dictRowTpl;
+
+            var deleteWrdEl = wrapperEl.getElementsByClassName('item-word-delete')[0];
+            deleteWrdEl.dataset.removeWord = word.word_id;
+
+            if (word.picture_url) {
+                var imageEl = wrapperEl.getElementsByClassName('pic-bl__img')[0];
+                imageEl.src = word.picture_url;
+            }
+
+            var progressEl = wrapperEl.getElementsByClassName('item-word-progress')[0];
+            progressEl.className += ' item-word-progress-' + word.progress_percent;
+            progressEl.dataset.progressPercent = word.progress_percent;
+            progressEl.dataset.tooltip = "Word progress: " + word.progress_percent + "%.";
+            progressEl.dataset.showChangeProgress = word.word_id;
+
 
             var soundEl = wrapperEl.getElementsByClassName('item-word-sound')[0];
             soundEl.dataset.voiceUrl = word.sound_url;

@@ -61,7 +61,7 @@ define([], function () {
                     // otherwise merge down (it's an initial download)
 
                     if (latestWord) {
-                        console.info("Latest word:", wordsBatch);
+                        console.info("Latest word:", latestWord.word_value);
                         words = wordsBatch.concat(words);
                     } else {
                         words = words.concat(wordsBatch);
