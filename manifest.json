@@ -1,8 +1,8 @@
 {
     "name": "Lingualeo Russian Search",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "manifest_version": 2,
-    "description": "Позволяет искать английские слова по их переводу",
+    "description": "Позволяет искать английские слова по их переводу в СВОЁМ словаре",
     "icons": {
         "48": "images/icon48.png"
     },

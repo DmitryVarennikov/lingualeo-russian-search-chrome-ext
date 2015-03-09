@@ -9,10 +9,8 @@ require({
     [
         'scripts/storage',
         'scripts/service',
-        'scripts/view',
-        'text!templates/dict-row.tpl'
+        'scripts/view'
     ],
-    function (Storage, Service, View, dictRowTpl) {
+    function (Storage, Service, View) {
         console.log('background page running...');
-        console.log(dictRowTpl);
     });
