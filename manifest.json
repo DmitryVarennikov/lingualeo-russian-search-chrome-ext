@@ -1,5 +1,5 @@
 {
-    "name": "Lingualeo Russian Search",
+    "name": "LinguaLeo Russian Search",
     "version": "0.1.0",
     "manifest_version": 2,
     "description": "Позволяет искать английские слова по их переводу в СВОЁМ словаре",
@@ -19,7 +19,9 @@
         {
             "matches": [
                 "http://lingualeo.com/ru/userdict",
-                "https://lingualeo.com/ru/userdict"
+                "https://lingualeo.com/ru/userdict",
+                "http://lingualeo.com/ru/userdict/wordSets/*",
+                "https://lingualeo.com/ru/userdict/wordSets/*"
             ],
             "js": [
                 "scripts/require.js",

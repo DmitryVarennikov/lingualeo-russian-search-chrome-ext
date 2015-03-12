@@ -170,13 +170,25 @@ define([
 
 
                 if (this.value && isCyrillicInput(this.value)) {
+                    var groupId = null;
+
+                    if (location.pathname.indexOf('/ru/userdict/wordSets/') > - 1) {
+                        groupId = location.pathname.replace('/ru/userdict/wordSets/', '');
+                        // just in case there is a garbage after group id in the URL
+                        var slashPos = groupId.indexOf('/');
+                        if (slashPos > - 1) {
+                            groupId = groupId.substring(0, groupId.indexOf('/'));
+                        }
+                        groupId = Number(groupId);
+                    }
+
                     e.stopPropagation();
 
                     addClass(searchResultsEl, 'translations');
                     searchResultsEl.style.display = "block";
                     searchResultsEl.innerHTML = "";
 
-                    storage.search(this.value, updateSearchResults);
+                    storage.search(this.value, groupId, updateSearchResults);
                 }
             });
         };

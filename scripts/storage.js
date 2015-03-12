@@ -26,30 +26,39 @@ define([], function () {
 
         /**
          * @param {String} term
+         * @param {Number} groupId
          * @param {Function} callback({String}, {String})
          */
-        this.search = function (term, callback) {
-            // @TODO: interrupt search for an old term if a new one has come
-
+        this.search = function (term, groupId, callback) {
             var prevWordValue,
                 resultNum = 0;
 
             words.forEach(function (word) {
                 if (resultNum < 20) {
-                    word.user_translates.forEach(function (translation) {
-                        if (translation.translate_value.indexOf(term) > - 1) {
 
-
-                            if (prevWordValue != word.word_value) {
-                                prevWordValue = word.word_value;
-                                resultNum ++;
-
-                                callback(word, term);
-                            }
+                    if (groupId) {
+                        if (word.groups && word.groups.indexOf(groupId) > - 1) {
+                            searchTranslations(word, word.user_translates);
                         }
-                    });
+                    } else {
+                        searchTranslations(word, word.user_translates);
+                    }
                 }
             });
+
+            function searchTranslations(word, translations) {
+                translations.forEach(function (translation) {
+                    if (translation.translate_value.indexOf(term) > - 1) {
+
+                        if (prevWordValue != word.word_value) {
+                            prevWordValue = word.word_value;
+                            resultNum ++;
+
+                            callback(word, term);
+                        }
+                    }
+                });
+            }
         };
 
         function updateWords(latestWord) {
