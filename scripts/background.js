@@ -1,16 +1,33 @@
 'use strict';
 
-require({
-        baseUrl: '.',
-        paths:   {
-            text: "scripts/text"
-        }
+require(
+    {
+        baseUrl: chrome.extension.getURL("/")
     },
     [
-        'scripts/storage',
         'scripts/service',
-        'scripts/view'
+        'scripts/storage'
     ],
-    function (Storage, Service, View) {
-        console.log('background page running...');
+    function (Service, Storage) {
+        var service = new Service(),
+            storage = new Storage(service);
+
+        document.getElementsByName('sync')[0].addEventListener('click', function () {
+            sync();
+        });
+
+        // run synchronization every 24 hours
+        setInterval(function () {
+            sync();
+        }, 1000 * 60 * 60 * 24);
+
+        function sync() {
+            service.isAuthenticated(function (error, is) {
+                if (error) {
+                    console.error(error);
+                } else if (is) {
+                    storage.sync();
+                }
+            });
+        }
     });

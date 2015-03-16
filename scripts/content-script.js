@@ -17,6 +17,8 @@ require(
             storage = new Storage(service),
             view = new View(storage, service);
 
+        // as soon as we hit lingualeo dictionary update the latest words and listen to the search box
+        storage.updateWords();
         view.listenToSearchBox();
     }
 );

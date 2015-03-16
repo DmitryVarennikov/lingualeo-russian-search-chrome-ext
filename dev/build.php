@@ -73,6 +73,9 @@ function copyFiles($outputDir)
     $cmd = sprintf('cp scripts/content-script-build-%s.js %s/scripts/', date('Y-m-d'), $outputDir);
     execute($cmd);
 
+    $cmd = 'cp background.html ' . $outputDir;
+    execute($cmd);
+
     $cmd = 'cp manifest.json ' . $outputDir;
     execute($cmd);
 }
@@ -81,9 +84,6 @@ function alterManifest($outputDir)
 {
     $manifestFileName = $outputDir . '/manifest.json';
     $content          = json_decode(file_get_contents($manifestFileName), true);
-
-    // background page is used just for test purpose
-    unset($content['background']);
 
     // replace main entry script with a built one
     $contentScriptBuildName = sprintf('scripts/content-script-build-%s.js', date('Y-m-d'));

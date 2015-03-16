@@ -11,18 +11,6 @@ define([], function () {
         var storage = chrome.storage.local,
             words = [];
 
-        // pre load words as soon as we create an object (it basically means we hit http://lingualeo.com/ru/userdict)
-        getWords(function (_words) {
-            words = _words;
-
-            var latestWord = null;
-            if (words.length) {
-                latestWord = words[0];
-            }
-
-            updateWords(latestWord);
-        });
-
 
         /**
          * @param {String} term
@@ -61,12 +49,31 @@ define([], function () {
             }
         };
 
-        function updateWords(latestWord) {
-            service.downloadWords(latestWord, function (error, wordsBatch) {
+        this.sync = function () {
+            var that = this;
+
+            storage.remove('words', function () {
+                words = [];
+                that.updateWords();
+            });
+        };
+
+        this.updateWords = function () {
+            var latestWord = null,
+                nonEmptyBatchWasPresented = false;
+
+            function downloadWordsRecursivelyCallback(error, wordsBatch, isThereMoreWords) {
                 if (error) {
                     console.error(error);
+
+                    // save all grabbed words so far
+                    setWords(words);
                 } else {
-                    // !!!important: if we already have the latest word then add new batch on top of the the basis,
+                    if (wordsBatch.length) {
+                        nonEmptyBatchWasPresented = true;
+                    }
+
+                    // !!!important: if we already have the latest word then add new batch on top of the basis,
                     // otherwise merge down (it's an initial download)
 
                     if (latestWord) {
@@ -76,14 +83,31 @@ define([], function () {
                         words = words.concat(wordsBatch);
                     }
 
-
-                    storage.set({"words": words}, function () {
-                        if (chrome.runtime.lastError) {
-                            console.error(chrome.runtime.lastError);
-                        }
-                    });
+                    // save only one time at the very end
+                    console.info('is there more words:', isThereMoreWords);
+                    // no need to re-save pre-loaded words if there was no new ones
+                    if (! isThereMoreWords && nonEmptyBatchWasPresented) {
+                        console.info('re-saving words...');
+                        setWords(words);
+                    }
                 }
-            });
+            }
+
+            if (words.length) {
+                latestWord = words[0];
+                service.downloadWordsRecursively(latestWord, downloadWordsRecursivelyCallback);
+            } else {
+                // pre-load existing words into memory if there are none
+                getWords(function (_words) {
+                    words = _words;
+
+                    if (words.length) {
+                        latestWord = words[0];
+                    }
+
+                    service.downloadWordsRecursively(latestWord, downloadWordsRecursivelyCallback);
+                });
+            }
         };
 
         function getWords(callback) {
@@ -94,6 +118,14 @@ define([], function () {
                 }
 
                 callback(words);
+            });
+        }
+
+        function setWords(words) {
+            storage.set({"words": words}, function () {
+                if (chrome.runtime.lastError) {
+                    console.error(chrome.runtime.lastError);
+                }
             });
         }
     }
