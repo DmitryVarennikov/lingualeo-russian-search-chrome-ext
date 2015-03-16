@@ -10,12 +10,32 @@ define([
         }
 
         // DOM elements
-        var contentEl = document.getElementById('content'),
-            searchResultsEl = contentEl.getElementsByClassName('dict-content')[0].children[0],
-            notFoundEl = contentEl.getElementsByClassName('not-found')[0],
-            notFoundImageEl = contentEl.getElementsByClassName('not-found-image')[0],
-            searchBox = document.getElementsByName('search')[0],
-            clearSearchBox = contentEl.getElementsByClassName('clear-search')[0];
+        var contentEl,
+            searchResultsEl,
+            searchBox,
+            clearSearchBox;
+
+        ['content', 'glossaryPage'].forEach(function (id) {
+            if (document.getElementById(id)) {
+                contentEl = document.getElementById(id);
+            }
+        });
+
+        if (contentEl) {
+            // class name changes depending on where we are: either glossary or dictionary
+            ['dict-content', 'sets-words'].forEach(function (className) {
+                if (contentEl.getElementsByClassName(className).length) {
+                    searchResultsEl = contentEl.getElementsByClassName(className)[0].children[0];
+
+                    searchBox = document.getElementsByName('search')[0];
+                    clearSearchBox = contentEl.getElementsByClassName('clear-search')[0];
+
+                    if ('sets-words' == className) {
+                        listenToTheBackLinkOnGlossaryPage();
+                    }
+                }
+            });
+        }
 
 
         // load groups meanwhile
@@ -148,6 +168,11 @@ define([
         }
 
         this.listenToSearchBox = function () {
+            if (! searchResultsEl) {
+                console.info('`searchResultsEl` was not found on the page');
+                return;
+            }
+
             clearSearchBox.addEventListener('click', function (e) {
                 if (hasClass(searchResultsEl, 'translations')) {
                     removeClass(searchResultsEl, 'translations');
@@ -182,12 +207,21 @@ define([
         function search(value) {
             var groupId = null;
 
-            // support search in groups
+            // support search in groups in word sets
             if (location.pathname.indexOf('/ru/userdict/wordSets/') > - 1) {
                 groupId = location.pathname.replace('/ru/userdict/wordSets/', '');
                 // just in case there is a garbage after group id in the URL
-                var slashPos = groupId.indexOf('/');
-                if (slashPos > - 1) {
+                if (groupId.indexOf('/') > - 1) {
+                    groupId = groupId.substring(0, groupId.indexOf('/'));
+                }
+                groupId = Number(groupId);
+            }
+
+            // support search in groups in the glossary
+            if (location.pathname.indexOf('/ru/glossary/learn/') > - 1) {
+                groupId = location.pathname.replace('/ru/glossary/learn/', '');
+                // just in case there is a garbage after group id in the URL
+                if (groupId.indexOf('/') > - 1) {
                     groupId = groupId.substring(0, groupId.indexOf('/'));
                 }
                 groupId = Number(groupId);
@@ -242,6 +276,26 @@ define([
                             break;
                         }
                     }
+                }
+            });
+        }
+
+        /**
+         * Clear search results on a back button (to all glossary groups)
+         */
+        function listenToTheBackLinkOnGlossaryPage() {
+            var backLinkEl = contentEl.getElementsByClassName('iconm-back-link')[1];
+
+            backLinkEl.addEventListener('click', function () {
+                var value = searchBox.value;
+
+                if (isCyrillicInput(value)) {
+                    var event = new MouseEvent('click', {
+                        'view':       window,
+                        'bubbles':    true,
+                        'cancelable': true
+                    });
+                    clearSearchBox.dispatchEvent(event);
                 }
             });
         }

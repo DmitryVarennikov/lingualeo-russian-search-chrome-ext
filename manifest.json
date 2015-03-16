@@ -21,7 +21,9 @@
                 "http://lingualeo.com/ru/userdict",
                 "https://lingualeo.com/ru/userdict",
                 "http://lingualeo.com/ru/userdict/wordSets/*",
-                "https://lingualeo.com/ru/userdict/wordSets/*"
+                "https://lingualeo.com/ru/userdict/wordSets/*",
+                "http://lingualeo.com/ru/glossary/learn/*",
+                "https://lingualeo.com/ru/glossary/learn/*"
             ],
             "js": [
                 "scripts/require.js",
