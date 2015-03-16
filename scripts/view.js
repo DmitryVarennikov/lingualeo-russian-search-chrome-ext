@@ -16,7 +16,6 @@ define([
             notFoundImageEl = contentEl.getElementsByClassName('not-found-image')[0],
             searchBox = document.getElementsByName('search')[0],
             clearSearchBox = contentEl.getElementsByClassName('clear-search')[0];
-        //var progressEl = document.getElementById('progress').children[0];
 
 
         // load groups meanwhile
@@ -111,7 +110,7 @@ define([
                 var groupsAdded = 0;
                 word.groups.forEach(function (wordGroup) {
                     var groupLinkEl = document.createElement('a');
-                    groupLinkEl.setAttribute('class', 't-ellps link-gray-dotted');
+                    groupLinkEl.setAttribute('class', 't-ellps link-gray-dotted lrsce-group');
                     groupLinkEl.dataset.wordGroup = wordGroup;
                     // @TODO: owner?
                     groupLinkEl.dataset.wordGroupType = "owner";
@@ -132,6 +131,9 @@ define([
 
                     groupsEl.appendChild(groupLinkEl);
                     groupsAdded ++;
+
+                    // don't forget to listen to the click so we can display relevant search results
+                    listenToTheGroupLinkClick(groupLinkEl);
                 });
             }
 
@@ -170,28 +172,33 @@ define([
 
 
                 if (this.value && isCyrillicInput(this.value)) {
-                    var groupId = null;
-
-                    if (location.pathname.indexOf('/ru/userdict/wordSets/') > - 1) {
-                        groupId = location.pathname.replace('/ru/userdict/wordSets/', '');
-                        // just in case there is a garbage after group id in the URL
-                        var slashPos = groupId.indexOf('/');
-                        if (slashPos > - 1) {
-                            groupId = groupId.substring(0, groupId.indexOf('/'));
-                        }
-                        groupId = Number(groupId);
-                    }
-
                     e.stopPropagation();
 
-                    addClass(searchResultsEl, 'translations');
-                    searchResultsEl.style.display = "block";
-                    searchResultsEl.innerHTML = "";
-
-                    storage.search(this.value, groupId, updateSearchResults);
+                    search(this.value);
                 }
             });
         };
+
+        function search(value) {
+            var groupId = null;
+
+            // support search in groups
+            if (location.pathname.indexOf('/ru/userdict/wordSets/') > - 1) {
+                groupId = location.pathname.replace('/ru/userdict/wordSets/', '');
+                // just in case there is a garbage after group id in the URL
+                var slashPos = groupId.indexOf('/');
+                if (slashPos > - 1) {
+                    groupId = groupId.substring(0, groupId.indexOf('/'));
+                }
+                groupId = Number(groupId);
+            }
+
+            addClass(searchResultsEl, 'translations');
+            searchResultsEl.style.display = "block";
+            searchResultsEl.innerHTML = "";
+
+            storage.search(value, groupId, updateSearchResults);
+        }
 
         /**
          * Actually everything that we need to know is if the first character matches russian alphabet
@@ -205,6 +212,38 @@ define([
             } else {
                 return false;
             }
+        }
+
+        function listenToTheGroupLinkClick(groupLinkEl) {
+            groupLinkEl.addEventListener('click', function (e) {
+                var groupId = groupLinkEl.dataset.wordGroup,
+                    value = searchBox.value,
+                    backLinkEl = contentEl.getElementsByClassName('iconm-back-link')[0],
+                    dictTitleEl = contentEl.getElementsByClassName('dict-title-main')[0];
+
+
+                if (value && isCyrillicInput(value)) {
+                    e.stopPropagation();
+
+                    window.history.pushState({}, '', '/ru/userdict/wordSets/' + groupId);
+                    search(value);
+
+                    // show link and remove data attribute so browser can reload page
+                    // and we don't think about refreshing search results
+                    backLinkEl.style.display = 'block';
+                    // if URL ends on "/wordSets" lingualeo doesn't display group names next to words
+                    backLinkEl.setAttribute('href', '/ru/userdict');
+                    delete backLinkEl.dataset.dictSwitchView;
+
+                    // title
+                    for (var i = 0; i < groups.length; i ++) {
+                        if (groups[i].id == groupId) {
+                            dictTitleEl.innerText = groups[i].name;
+                            break;
+                        }
+                    }
+                }
+            });
         }
     }
 
