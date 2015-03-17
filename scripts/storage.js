@@ -128,6 +128,26 @@ define([], function () {
                 }
             });
         }
+
+        this.setLastSyncDate = function (lastSyncDate) {
+            storage.set({"lastSyncDate": lastSyncDate}, function () {
+                if (chrome.runtime.lastError) {
+                    console.error(chrome.runtime.lastError);
+                }
+            });
+        };
+
+        this.getLastSyncDate = function (callback) {
+            storage.get("lastSyncDate", function (obj) {
+                var lastSyncDate = null;
+
+                if (obj.lastSyncDate) {
+                    lastSyncDate = obj.lastSyncDate;
+                }
+
+                callback(lastSyncDate);
+            });
+        };
     }
 
     return Storage;
