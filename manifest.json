@@ -1,6 +1,6 @@
 {
     "name": "LinguaLeo Russian Search",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "manifest_version": 2,
     "description": "Позволяет искать английские слова по их переводу в СВОЁМ словаре",
     "icons": {
@@ -41,6 +41,7 @@
         "scripts/service.js",
         "scripts/view.js",
         "scripts/text.js",
-        "templates/dict-row.tpl"
+        "templates/dict-row.tpl",
+        "scripts/google-analytics.js"
     ]
 }
