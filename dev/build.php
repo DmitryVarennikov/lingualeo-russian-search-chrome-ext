@@ -16,6 +16,7 @@ $outputDir = rtrim($argv[1], '/');
 createBuild();
 copyFiles($outputDir);
 alterManifest($outputDir);
+alterContent($outputDir);
 removeBuild();
 
 
@@ -49,6 +50,12 @@ function createBuild()
         date('Y-m-d')
     );
     execute($cmd);
+
+    $cmd = sprintf(
+        'r.js -o baseUrl=. name=scripts/background out=scripts/background-build-%s.js paths.google-analytics=empty:',
+        date('Y-m-d')
+    );
+    execute($cmd);
 }
 
 function copyFiles($outputDir)
@@ -71,6 +78,9 @@ function copyFiles($outputDir)
     execute($cmd);
 
     $cmd = sprintf('cp scripts/content-script-build-%s.js %s/scripts/', date('Y-m-d'), $outputDir);
+    execute($cmd);
+
+    $cmd = sprintf('cp scripts/background-build-%s.js %s/scripts/', date('Y-m-d'), $outputDir);
     execute($cmd);
 
     $cmd = 'cp background.html ' . $outputDir;
@@ -110,8 +120,26 @@ function alterManifest($outputDir)
     }
 }
 
+function alterContent($outputDir)
+{
+    $change = function ($filename, $searchContent, $replaceContent) {
+        $content = file_get_contents($filename);
+        $content = str_replace($searchContent, $replaceContent, $content);
+        file_put_contents($filename, $content);
+    };
+
+    $change(
+        $outputDir . '/background.html',
+        'data-main="scripts/background"',
+        sprintf('data-main="scripts/background-build-%s"', date('Y-m-d'))
+    );
+}
+
 function removeBuild()
 {
     $cmd = sprintf('rm scripts/content-script-build-%s.js', date('Y-m-d'));
+    execute($cmd);
+
+    $cmd = sprintf('rm scripts/background-build-%s.js', date('Y-m-d'));
     execute($cmd);
 }
